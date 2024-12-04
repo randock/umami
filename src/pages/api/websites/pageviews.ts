@@ -87,12 +87,26 @@ export default async (
       websites: [],
     };
 
-    for (const website of websites.data) {
-      const pageviews = await getPageviewStats(website.id, filters);
+    const promises: Promise<any>[] = [];
+    for (let i = 0; i < websites.data.length; i++) {
+      promises[i] = getPageviewStats(websites.data[i].id, filters);
+    }
+
+    const results = await Promise.allSettled(Object.values(promises));
+
+    for (let i = 0; i < websites.data.length; i++) {
+      const website = websites.data[i];
+      const pageviews = results[i];
+
+      let totalPageviews = 0;
+      if (pageviews.status === 'fulfilled') {
+        totalPageviews = pageviews.value;
+      }
+
       output.websites.push({
         id: website.id,
         name: website.name,
-        pageviews,
+        pageviews: totalPageviews,
       });
     }
 
