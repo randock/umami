@@ -94,6 +94,7 @@ model Website {
   @@index([teamId])
   @@index([createdAt])
   @@index([createdBy])
+  @@index([domain])
   @@map("website")
 }
 

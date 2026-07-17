@@ -28,10 +28,7 @@ export async function getWebsite(websiteId: string) {
 export async function getWebsiteByDomain(domain: string) {
   const website = await prisma.client.website.findFirst({
     where: {
-      domain: {
-        equals: domain,
-        mode: 'insensitive',
-      },
+      domain,
       deletedAt: null,
     },
   });
