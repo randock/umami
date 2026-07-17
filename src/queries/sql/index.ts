@@ -29,6 +29,7 @@ export * from './getWeeklyTraffic';
 export * from './heatmap/extractHeatmapEvents';
 export * from './heatmap/getHeatmap';
 export * from './heatmap/saveHeatmapEvents';
+export * from './pageviews/getDomainPageviews';
 export * from './pageviews/getPageviewExpandedMetrics';
 export * from './pageviews/getPageviewMetrics';
 export * from './pageviews/getPageviewStats';
