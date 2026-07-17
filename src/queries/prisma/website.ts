@@ -25,6 +25,24 @@ export async function getWebsite(websiteId: string) {
   return attachShareIdToWebsite(website);
 }
 
+export async function getWebsiteByDomain(domain: string) {
+  const website = await prisma.client.website.findFirst({
+    where: {
+      domain: {
+        equals: domain,
+        mode: 'insensitive',
+      },
+      deletedAt: null,
+    },
+  });
+
+  if (!website) {
+    return null;
+  }
+
+  return attachShareIdToWebsite(website);
+}
+
 export async function getWebsites(criteria: Prisma.WebsiteFindManyArgs, filters: QueryFilters) {
   const sortFilters = sanitizeSortFilters(filters, WEBSITE_SORT_FIELDS);
   const { search } = sortFilters;
