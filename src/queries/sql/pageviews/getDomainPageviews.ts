@@ -12,18 +12,18 @@ export async function getDomainPageviews(): Promise<DomainPageviews[]> {
   return rawQuery(
     `
     select
-      string_agg(sub.name, ',') as domains,
+      string_agg(sub.domain, ',') as domains,
       sub.pageviews
     from (
       select
-        website.name,
+        website.domain,
         count(website_event.event_id)::int as pageviews
       from website_event
         inner join website on website.website_id = website_event.website_id
       where website_event.created_at between now() - interval '30 days' and now()
         and website_event.event_type = {{eventType}}
         and website.deleted_at is null
-      group by website.website_id, website.name
+      group by website.website_id, website.domain
     ) sub
     group by sub.pageviews
     order by sub.pageviews desc
