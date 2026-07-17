@@ -21,8 +21,9 @@ DROP INDEX IF EXISTS "website_event_website_id_session_id_created_at_idx";
 DROP INDEX IF EXISTS "website_event_website_id_visit_id_created_at_idx";
 
 -- The backfill joins a ~39M row session hash table; the default 4MB work_mem
--- makes the hash join spill to disk in hundreds of batches.
-SET work_mem = '256MB';
+-- makes the hash join spill to disk in hundreds of batches. 4GB fits the
+-- whole hash in memory on the production compute (8 CU / 32 GB).
+SET work_mem = '4GB';
 
 -- DataMigration
 UPDATE "website_event" w
