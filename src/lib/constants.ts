@@ -81,6 +81,7 @@ export const FILTER_COLUMNS = {
   domain: 'referrer_domain',
   hostname: 'hostname',
   distinctId: 'distinct_id',
+  sessionId: 'session_id',
   title: 'page_title',
   query: 'url_query',
   os: 'os',
