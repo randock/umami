@@ -52,6 +52,7 @@ model Session {
   @@index([createdAt])
   @@index([websiteId])
   @@index([websiteId, createdAt])
+  @@index([distinctId])
   @@index([websiteId, createdAt, browser])
   @@index([websiteId, createdAt, os])
   @@index([websiteId, createdAt, device])
