@@ -15,8 +15,10 @@ export async function GET(
   { params }: { params: Promise<{ websiteId: string }> },
 ) {
   const schema = z.object({
-    startAt: z.coerce.number().int(),
-    endAt: z.coerce.number().int(),
+    // optional: the point of the endpoint is a visitor's whole history, and
+    // any default here would silently truncate it
+    startAt: z.coerce.number().int().optional(),
+    endAt: z.coerce.number().int().optional(),
     distinctId: z.string().optional(),
     sessionId: z.string().optional(),
     interestEvent: z.string().optional(),
@@ -50,8 +52,8 @@ export async function GET(
   const data = await getVisitorActivity(websiteId, {
     distinctIds,
     sessionIds,
-    startDate: new Date(query.startAt),
-    endDate: new Date(query.endAt),
+    startDate: query.startAt !== undefined ? new Date(query.startAt) : undefined,
+    endDate: query.endAt !== undefined ? new Date(query.endAt) : undefined,
     interestEvents: commaSeparated(query.interestEvent),
     pageLimit: query.pageLimit ?? 500,
     eventLimit: query.eventLimit ?? 500,
