@@ -11,11 +11,28 @@
 ALTER TABLE "website_event" SET (autovacuum_vacuum_insert_scale_factor = 0.02);
 ALTER TABLE "session" SET (autovacuum_vacuum_insert_scale_factor = 0.02);
 
--- Partial index the export can answer from alone (index-only scan).
--- IF NOT EXISTS because in production it is created beforehand by hand with
--- CREATE INDEX CONCURRENTLY, which cannot run inside a migration transaction.
--- prisma/schema.prisma cannot express a partial index, so it is only declared
--- here.
-CREATE INDEX IF NOT EXISTS "website_event_pageview_created_at_website_id_idx"
-  ON "website_event" ("created_at", "website_id")
-  WHERE "event_type" = 1;
+-- Partial index the export can answer from alone (index-only scan). Nearly all
+-- events are pageviews, so the predicate barely filters rows, but leaving
+-- event_type out of the key keeps the index ~20% smaller than a plain
+-- (created_at, website_id, event_type) index. prisma/schema.prisma cannot
+-- express a partial index, so it is only declared here.
+--
+-- On large databases the index must be created beforehand by hand with
+-- CREATE INDEX CONCURRENTLY, which cannot run inside a migration transaction;
+-- a plain CREATE INDEX would block inserts on website_event while it builds.
+-- The existence check uses to_regclass rather than CREATE INDEX IF NOT EXISTS
+-- because the latter still takes a SHARE lock on website_event, waiting behind
+-- open inserts and queueing new ones, even when the index already exists. If
+-- the index is missing on a large table, fail instead of building it here.
+DO $$
+BEGIN
+  IF to_regclass('website_event_pageview_created_at_website_id_idx') IS NULL THEN
+    IF (SELECT reltuples FROM pg_class WHERE oid = 'website_event'::regclass) > 1000000 THEN
+      RAISE EXCEPTION 'website_event is too large to index inside a migration. Run by hand first: CREATE INDEX CONCURRENTLY "website_event_pageview_created_at_website_id_idx" ON "website_event" ("created_at", "website_id") WHERE "event_type" = 1;';
+    END IF;
+
+    CREATE INDEX "website_event_pageview_created_at_website_id_idx"
+      ON "website_event" ("created_at", "website_id")
+      WHERE "event_type" = 1;
+  END IF;
+END $$;
