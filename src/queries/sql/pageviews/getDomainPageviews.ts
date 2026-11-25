@@ -17,7 +17,7 @@ export async function getDomainPageviews(): Promise<DomainPageviews[]> {
     from (
       select
         website.domain,
-        count(website_event.event_id)::int as pageviews
+        count(*)::int as pageviews
       from website_event
         inner join website on website.website_id = website_event.website_id
       where website_event.created_at between now() - interval '30 days' and now()
